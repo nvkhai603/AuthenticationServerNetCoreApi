@@ -70,10 +70,21 @@ namespace G12.Authentication.Services
             return new AppResponse(ResponseCode.Success, "", group);
         }
 
-        
+
         public bool IsGroupExist(string gName, string gCode)
         {
             return _dbContext.GroupInfor.Any(g => g.Name == gName || g.Code == gCode);
+        }
+
+        public AppResponse GetAllGroups()
+        {
+            var groups = _dbContext.GroupInfor;
+            var groupsRes = new List<GroupClientRes>();
+            foreach (var group in groups)
+            {
+                groupsRes.Add(new GroupClientRes { Id = group.Id, Code = group.Code, Name = group.Name });
+            }
+            return new AppResponse(ResponseCode.Success, "", groupsRes);
         }
     }
 }

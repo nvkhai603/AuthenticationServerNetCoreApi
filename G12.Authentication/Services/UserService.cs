@@ -78,16 +78,25 @@ namespace G12.Authentication.Services
             var userClient = await MapUserToUserClient(user);
             var userContentReqToSubApp = JsonConvert.SerializeObject(userClient);
 
-            //TODO: Register user for App
-            using (var client = new HttpClient())
+            try
             {
-                var httpContent = new StringContent(userContentReqToSubApp, Encoding.UTF8, "application/json");
-                var urlInstall = group.UrlInstall;
-                var resultRegisterUserInSubApp = await client.PostAsync(urlInstall, httpContent);
-                if (!resultRegisterUserInSubApp.IsSuccessStatusCode)
+                //TODO: Register user for App
+                using (var client = new HttpClient())
                 {
-                    return new AppResponse(ResponseCode.IntergratesFail, "Không thể thêm người dùng vào SubApp.", null);
+                    var httpContent = new StringContent(userContentReqToSubApp, Encoding.UTF8, "application/json");
+                    var urlInstall = group.UrlInstall;
+                    var resultRegisterUserInSubApp = await client.PostAsync(urlInstall, httpContent);
+                    if (!resultRegisterUserInSubApp.IsSuccessStatusCode)
+                    {
+                        return new AppResponse(ResponseCode.IntergratesFail, "Không thể thêm người dùng vào SubApp.", null);
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                _dbContext.User.Remove(user);
+                await _dbContext.SaveChangesAsync();
+                return new AppResponse(ResponseCode.IntergratesFail, "Không thể kết nối tới SubApp.", null);
             }
             return new AppResponse(ResponseCode.Success, "", userClient);
         }

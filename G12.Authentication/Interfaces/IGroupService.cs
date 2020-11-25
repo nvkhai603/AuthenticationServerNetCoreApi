@@ -11,5 +11,7 @@ namespace G12.Authentication.Interfaces
         public bool IsGroupExist(string gName, string gCode);
         public Task<AppResponse> AddGroup(AddGroupReq addGroupReq);
         public Task<AppResponse> ModifiGroup(AddGroupReq addGroupReq, int groupId);
+
+        public AppResponse GetAllGroups();
     }
 }

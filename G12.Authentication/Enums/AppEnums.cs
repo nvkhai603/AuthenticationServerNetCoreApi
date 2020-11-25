@@ -10,6 +10,7 @@ namespace G12.Authentication.Enums
         public static int Success = 200;
         public static int ValidationError = 400;
         public static int NotPermission = 403;
+        public static int UnAuthorized = 401;
         public static int Exception = 500;
         public static int IntergratesFail = 300;
     }

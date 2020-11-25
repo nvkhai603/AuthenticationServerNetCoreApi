@@ -16,6 +16,7 @@ using System.Security.Claims;
 using G12.Authentication.Enums;
 using G12.Authentication.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using StackExchange.Redis;
 
 namespace G12.Authentication.Controllers
 {
@@ -59,7 +60,7 @@ namespace G12.Authentication.Controllers
             var user = await _userService.Authenticate(userLoginReq);
 
             if (user == null)
-                return BadRequest(new AppResponse(ResponseCode.ValidationError, "Tài khoản hoặc mật khẩu không chính xác"));
+                return BadRequest(new AppResponse(ResponseCode.ValidationError, "Tài khoản hoặc mật khẩu không chính xác."));
             // Lấy lên role user
             var listRoles = await _userService.GetListUserRolesByIdAsync(user.Id);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -80,14 +81,79 @@ namespace G12.Authentication.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
+            // Create sid
+            var redis = ConnectionMultiplexer.Connect(_configuration.GetSection("AppConfigs:Cache").Value.ToString());
+            var database = redis.GetDatabase();
+            var cacheKey = $"{Guid.NewGuid().ToString()}-{user.Id}";
+            database.StringSet(cacheKey, tokenString, TimeSpan.FromMinutes(1));
             // return basic user info and authentication token
             return Ok(new AppResponse(ResponseCode.Success, "", new
             {
                 user.Id,
                 Username = user.UserName,
                 user.Email,
-                Token = tokenString
+                sid = cacheKey
             }));
+        }
+
+        [HttpPost("basicAuth")]
+        public async Task<ActionResult<AppResponse>> BasicAuth(UserLoginReq userLoginReq)
+        {
+            var user = await _userService.Authenticate(userLoginReq);
+
+            if (user == null)
+                return BadRequest(new AppResponse(ResponseCode.ValidationError, "Tài khoản hoặc mật khẩu không chính xác."));
+            // Lấy lên role user
+            var listRoles = await _userService.GetListUserRolesByIdAsync(user.Id);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var secret = _configuration.GetSection("AppConfigs:Secret");
+            var key = Encoding.ASCII.GetBytes(secret.ToString());
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(CustomClaimTypes.UserName, user.UserName.ToString()),
+                    new Claim(CustomClaimTypes.UserId, user.Id.ToString()),
+                    new Claim(CustomClaimTypes.Email, user.Email.ToString()),
+                    new Claim(CustomClaimTypes.ListRole, listRoles),
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+            // return basic user info and authentication token
+            return Ok(new AppResponse(ResponseCode.Success, "", new
+            {
+                user.Id,
+                Username = user.UserName,
+                user.Email,
+                token = tokenString
+            }));
+        }
+
+        /// <summary>
+        /// Lấy token khi có SID cho client
+        /// Created by nvkhai 21.11.2020
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        [HttpGet("token")]
+        public ActionResult GetTokenFromSid([FromQuery]string sid)
+        {
+            if (string.IsNullOrEmpty(sid))
+            {
+                return Ok(new AppResponse(ResponseCode.ValidationError, "Không tim thấy sid."));
+            }
+            // Create sid
+            var redis = ConnectionMultiplexer.Connect(_configuration.GetSection("AppConfigs:Cache").Value.ToString());
+            var database = redis.GetDatabase();
+            var token = database.StringGet(sid);
+            if (string.IsNullOrEmpty(token))
+            {
+                return Ok(new AppResponse(ResponseCode.UnAuthorized, "Không được xác thực."));
+            }
+            return Ok(new AppResponse(ResponseCode.Success, "", new { token }));
         }
 
         /// <summary>
@@ -121,6 +187,8 @@ namespace G12.Authentication.Controllers
             return Ok();
         }
 
+
+
         #region Groups
 
         /// <summary>
@@ -140,7 +208,7 @@ namespace G12.Authentication.Controllers
                 return Ok(new AppResponse(ResponseCode.NotPermission, "Chỉ quản trị hệ thống có thể thực hiện yêu cầu này."));
             }
             var groupAdmin = _userService.CreateUser(userRegisterReq);
-            return Ok(new AppResponse(ResponseCode.Success, "", groupAdmin));
+            return Ok(groupAdmin);
         }
 
         /// <summary>
@@ -162,6 +230,19 @@ namespace G12.Authentication.Controllers
             var result = await _groupService.AddGroup(addGroupReq);
             return Ok(result);
 
+        }
+
+        /// <summary>
+        /// Thêm Group
+        /// nvkhai 18.11.2020
+        /// </summary>
+        /// <param name="userRegisterReq"></param>
+        /// <returns></returns>
+        [HttpGet("groups")]
+        public ActionResult GetAllGroup()
+        {
+            var result = _groupService.GetAllGroups();
+            return Ok(result);
         }
 
         /// <summary>
