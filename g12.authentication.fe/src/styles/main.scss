@@ -1,0 +1,53 @@
+$enable-shadows: true;
+$enable-gradients: true;
+$primary: #3282b8;
+$border-radius: 2px;
+$border-radius-sm: 1px;
+$border-radius-lg: 3px;
+
+// Heading
+$h1-font-size: 32px;
+$h2-font-size: 24px;
+$h3-font-size: 18px;
+$h4-font-size: 16px;
+$h5-font-size: 13px;
+$h6-font-size: 11px;
+$body-color: #464646;
+// Container
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1350px,
+);
+// Import common style width bootstrap
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+@import "../../node_modules/bootstrap/scss/mixins";
+@import "../../node_modules/bootstrap/scss/utilities";
+
+@import "../../node_modules/bootstrap/scss/reboot";
+@import "../../node_modules/bootstrap/scss/grid";
+// @import "../../node_modules/bootstrap/scss/type";
+@import "../../node_modules/bootstrap/scss/alert";
+@import "../../node_modules/bootstrap/scss/forms";
+@import "../../node_modules/bootstrap/scss/images";
+@import "../../node_modules/bootstrap/scss/buttons";
+@import "../../node_modules/bootstrap/scss/badge";
+@import "../../node_modules/bootstrap/scss/close";
+@import "../../node_modules/bootstrap/scss/tables";
+@import "../../node_modules/bootstrap/scss/pagination";
+// Checkbox and radio
+@import "./radio";
+
+.nvk__table__head {
+  color: #ffffff;
+  background: #6da2c5;
+}
+.btn__join {
+  width: 320px;
+  border-radius: 32px !important;
+}
+.mw-500{
+  min-width: 500px;
+}
