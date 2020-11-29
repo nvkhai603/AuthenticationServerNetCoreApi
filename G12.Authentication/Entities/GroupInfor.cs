@@ -16,6 +16,7 @@ namespace G12.Authentication.Entities
         public DateTime? CreatedDate { get; set; }
         public string Code { get; set; }
         public string UrlHome { get; set; }
+        public string Avatar { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public string ModifiedBy { get; set; }
         public string CreatedBy { get; set; }

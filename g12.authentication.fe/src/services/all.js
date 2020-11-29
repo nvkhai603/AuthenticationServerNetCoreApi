@@ -8,5 +8,8 @@ export default {
     },
     checkAuth(){
         return api.get('authen');
+    },
+    getSid(){
+        return api.get('sid');
     }
 }

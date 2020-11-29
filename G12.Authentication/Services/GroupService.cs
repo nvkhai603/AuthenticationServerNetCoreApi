@@ -35,6 +35,7 @@ namespace G12.Authentication.Services
                 Name = addGroupReq.Name,
                 UrlHome = addGroupReq.UrlHome,
                 UrlInstall = addGroupReq.UrlInstall,
+                Avatar = addGroupReq.Avatar,
                 CreatedDate = DateTime.Now,
                 CreatedBy = RoleTypeNameEnums.SYS_ADMIN
             };
@@ -64,6 +65,7 @@ namespace G12.Authentication.Services
             group.UrlHome = addGroupReq.UrlHome;
             group.UrlInstall = addGroupReq.UrlInstall;
             group.ModifiedDate = DateTime.Now;
+            group.Avatar = addGroupReq.Avatar;
             group.ModifiedBy = RoleTypeNameEnums.SYS_ADMIN;
 
             await _dbContext.SaveChangesAsync();
@@ -82,7 +84,7 @@ namespace G12.Authentication.Services
             var groupsRes = new List<GroupClientRes>();
             foreach (var group in groups)
             {
-                groupsRes.Add(new GroupClientRes { Id = group.Id, Code = group.Code, Name = group.Name });
+                groupsRes.Add(new GroupClientRes { Id = group.Id, Code = group.Code, Name = group.Name, Avatar = group.Avatar, UrlHome = group.UrlHome });
             }
             return new AppResponse(ResponseCode.Success, "", groupsRes);
         }

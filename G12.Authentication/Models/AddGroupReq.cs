@@ -16,5 +16,7 @@ namespace G12.Authentication.Models
         public string Code { get; set; }
         [Required]
         public string UrlHome { get; set; }
+        [Required]
+        public string Avatar { get; set; }
     }
 }

@@ -96,6 +96,23 @@ namespace G12.Authentication.Controllers
             }));
         }
 
+        [HttpGet("sid")]
+        [Authorize]
+        public ActionResult GetSid()
+        {
+            if (Request.Headers.TryGetValue("Authorization",out var token) && !string.IsNullOrEmpty(token.ToString()))
+            {
+                // Create sid
+                var redis = ConnectionMultiplexer.Connect(_configuration.GetSection("AppConfigs:Cache").Value.ToString());
+                var database = redis.GetDatabase();
+                var cacheKey = Helpers.GenerateSid();
+                database.StringSet(cacheKey, token.ToString(), TimeSpan.FromMinutes(1));
+                //
+                return Ok(new AppResponse(ResponseCode.Success, "", new { sid = cacheKey }));
+            }
+            return Ok(new AppResponse(ResponseCode.Exception, "Không thể tạo sid."));
+        }
+
         [HttpPost("basicAuth")]
         public async Task<ActionResult<AppResponse>> BasicAuth(UserLoginReq userLoginReq)
         {
@@ -184,7 +201,7 @@ namespace G12.Authentication.Controllers
         [Authorize]
         public ActionResult Authen()
         {
-            return Ok();
+            return Ok(new AppResponse(ResponseCode.Success, ""));
         }
 
 

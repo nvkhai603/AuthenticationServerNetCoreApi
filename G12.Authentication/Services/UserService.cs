@@ -126,7 +126,8 @@ namespace G12.Authentication.Services
                             on role.RoleType equals roleType.Id
                         join groupInfor in _dbContext.GroupInfor
                             on role.RoleGroup equals groupInfor.Id
-                        select new { _role = roleType.Code, _group = groupInfor.Name };
+                        select new { _role = roleType.Code, _group = groupInfor.Code };
+
             if (query == null || !query.Any())
             {
                 throw new NullReferenceException("Không có Role và Group người dùng.");

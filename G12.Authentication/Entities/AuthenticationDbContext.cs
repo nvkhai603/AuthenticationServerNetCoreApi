@@ -68,6 +68,11 @@ namespace G12.Authentication.Entities
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8")
                     .HasCollation("utf8_general_ci");
+                entity.Property(e => e.Avatar)
+                    .IsRequired()
+                    .HasColumnType("text")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
             });
 
             modelBuilder.Entity<Role>(entity =>
